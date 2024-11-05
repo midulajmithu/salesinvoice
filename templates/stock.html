@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<body>
+    
+   {% extends 'navbar.html' %}
+
+   {% block inventery %}
+      <br>
+<div class="container">      
+<table class="table">
+    <thead>
+    <tr class="table-danger">
+        <th>Item</th>
+        <th>P.Quantity</th>
+        <th>S.Quantity</th>
+        <th>Stock</th>
+    </tr>
+</thead>
+<tbody>
+    {% for item, quantities in stocks %}
+    <tr>
+       <td>{{ item }}</td>
+       <td>{{ quantities.P_quantity }}</td>
+       <td>{{ quantities.S_quantity }}</td>
+       <td>{{ quantities.stock_quantity }}</td>
+    </tr>
+    {% empty %}
+    <tr>
+       <td colspan="4" class="text-center">No stock items available.</td>
+    </tr>
+    {% endfor %}
+</tbody>
+</table>
+</div>
+{% endblock %}
+</body>
+</html>

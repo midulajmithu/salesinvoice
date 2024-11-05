@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<body>
+    
+  {% include 'navbar.html' %}
+  {% include 'update.html' %}
+  <div class="text-end mt-3 pe-3">
+  <a href="{% url 'export_to_excel' 'purchase' %}" class="btn btn-success">Download</a>
+  </div> 
+  <br>
+<div class="container">      
+<table class="table">
+    <thead>
+    <tr class="table-danger">
+        <th>Date</th>
+        <th>MR or MH no</th>
+        <th>Item</th>
+        <th>Unit of messure</th>
+        <th>Quantity</th>
+        <th>Supplier Name</th>
+        <th>Project no</th>
+        <th>Invoice no</th>
+        <th>Action</th>
+    </tr>
+    
+</thead>
+<tbody>
+    {% for entry in entries %}
+        <tr>
+            <td>{{ entry.date }}</td>
+            <td>{{ entry.mr_mh_no }}</td>
+            <td>{{ entry.item }}</td>
+            <td>{{ entry.unit_of_measure }}</td>
+            <td>{{ entry.quantity }}</td>
+            <td>{{ entry.supplier_name }}</td>
+            <td>{{ entry.project_no }}</td>
+            <td>{{ entry.invoice_no }}</td>
+
+            <td>
+
+                 <!-- Update Button that triggers the modal -->
+                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#updateModal" 
+                 data-entry-id="{{ entry.id }}" 
+                 data-date="{{ entry.date }}" 
+                 data-mr-mh-no="{{ entry.mr_mh_no }}"
+                 data-item="{{ entry.item }}" 
+                 data-unit="{{ entry.unit_of_measure }}"
+                 data-quantity="{{ entry.quantity }}" 
+                 data-supplier="{{ entry.supplier_name }}" 
+                 data-project="{{ entry.project_no }}"
+                 data-invoice="{{ entry.invoice_no }}">
+             Update
+         </button>
+
+                <form action="{% url 'delete_entry' entry.id %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </td>
+
+        </tr>
+        {% endfor %}
+</tbody>
+</table>
+</div>
+</body>
+</html>
