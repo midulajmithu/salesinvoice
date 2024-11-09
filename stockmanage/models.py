@@ -1,4 +1,6 @@
+from django.contrib.auth.models import User
 from django.db import models
+from django.conf import settings
 
 # Create your models here.
 class P_S_Info(models.Model):
@@ -11,6 +13,10 @@ class P_S_Info(models.Model):
     supplier_name=models.CharField(max_length=30)
     project_no=models.CharField(max_length=30)
     invoice_no=models.CharField(max_length=30)
+
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL)
+
+
 class stock(models.Model):
     item=models.CharField(max_length=30)
     P_quantity=models.IntegerField(null=True)

@@ -52,22 +52,22 @@
           <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link " aria-current="page" href="{% url 'home' %}">Home</a>
+                    <a class="nav-link " aria-current="page" href="{% url 'admin_dashboard' %}">Home</a>
                   </li>
                   <div class="vl"></div>
                   <li class="nav-item">
-                    <a class="nav-link" href="{% url 'purchase' %}">Purchase</a>
+                    <a class="nav-link" href="{% url 'purchase_admin' user_id=user_id %}">Purchase</a>
                   </li>
                   <div class="vl"></div>
                   <li class="nav-item">
-                    <a class="nav-link" href="{% url 'sale' %}">Stock Movement</a>
+                    <a class="nav-link" href="{% url 'stockmovement_admin' user_id=user_id %}">Stock Movement</a>
                   </li>
                   <div class="vl"></div>
                   <li class="nav-item">
-                    <a class="nav-link" href="{% url 'stock' %}">Stock</a>
+                    <a class="nav-link" href="{% url 'stock_admin' user_id=user_id %}">Stock</a>
                   </li>
                   <li class="nav-item">
-                    <a class="nav-link" href="{% url 'analysis' %}">Analysis</a>
+                    <a class="nav-link" href="{% url 'analysis_admin' user_id=user_id %}">Analysis</a>
                   </li>
             </ul>
             
