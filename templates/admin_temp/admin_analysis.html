@@ -16,7 +16,7 @@
         <!-- Purchase Totals Section -->
         <h2>Purchase Totals</h2>
         <div class="mb-4">
-            <img src="{{ purchase_plot_url }}" alt="Total Purchases by Item" class="img-fluid">
+            {{ purchase_bar_url|safe }}  <!-- Plotly Bar Chart for Purchase Totals -->
         </div>
         
         <h2>Purchase Summary</h2>
@@ -33,7 +33,7 @@
         <!-- Stock Movement Totals Section -->
         <h2>Stock Movement Totals</h2>
         <div class="mb-4">
-            <img src="{{ stock_plot_url }}" alt="Total Stock Movement by Item" class="img-fluid">
+            {{ stock_bar_url|safe }}  <!-- Plotly Bar Chart for Stock Movement Totals -->
         </div>
         
         <h2>Stock Movement Summary</h2>
@@ -46,13 +46,13 @@
         <!-- Purchase Distribution Section -->
         <h2>Purchase Distribution</h2>
         <div class="mb-4">
-            {{ pie_plot_url1|safe }}  <!-- Use safe filter to render the HTML -->
+            {{ purchase_pie_url|safe }}  <!-- Plotly Pie Chart for Purchase Distribution -->
         </div>
 
         <!-- Stock Movement Distribution Section -->
         <h2>Stock Movement Distribution</h2>
         <div class="mb-4">
-            {{ pie_plot_url|safe }}  <!-- Use safe filter to render the HTML -->
+            {{ stock_pie_url|safe }}  <!-- Plotly Pie Chart for Stock Movement Distribution -->
         </div>
     </div>
 

@@ -2,21 +2,19 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.db.models import Sum
-from openpyxl import Workbook
-import matplotlib.pyplot as plt
-from plotly.offline import plot
-import io
 from .forms import P_S_InfoForm
 from django.contrib import messages
 from django.views.decorators.cache import cache_control
 from django.contrib.auth.decorators import login_required
-import plotly.graph_objs as go
-import base64
 from django.shortcuts import redirect, get_object_or_404
 from . models import P_S_Info
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from openpyxl import Workbook
+import plotly.graph_objs as go
+from plotly.offline import plot
+
 
 @login_required(login_url="sign_in")
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -287,18 +285,16 @@ def export_to_excel(request, record_type):
     # Save workbook to response
     workbook.save(response)
     return response
-
 @login_required(login_url="sign_in")
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def admin_analysis(request, user_id):
-    if (user_id =='all'):
+    if user_id == 'all':
         purchase_data = P_S_Info.objects.filter(SorP='purchase').values('item').annotate(total=Sum('quantity'))
         stock_data = P_S_Info.objects.filter(SorP='stock_Movement').values('item').annotate(total=Sum('quantity'))
-
     else:
-        user = User.objects.get(id=user_id) 
-        purchase_data = P_S_Info.objects.filter(SorP='purchase',created_by=user).values('item').annotate(total=Sum('quantity'))
-        stock_data = P_S_Info.objects.filter(SorP='stock_Movement',created_by=user).values('item').annotate(total=Sum('quantity'))
+        user = User.objects.get(id=user_id)
+        purchase_data = P_S_Info.objects.filter(SorP='purchase', created_by=user).values('item').annotate(total=Sum('quantity'))
+        stock_data = P_S_Info.objects.filter(SorP='stock_Movement', created_by=user).values('item').annotate(total=Sum('quantity'))
 
     # Prepare data for plotting purchase totals
     purchase_items = [data['item'] for data in purchase_data]
@@ -308,77 +304,55 @@ def admin_analysis(request, user_id):
     stock_items = [data['item'] for data in stock_data]
     stock_totals = [data['total'] for data in stock_data]
 
-    # Create a bar plot for purchase totals
-    plt.figure(figsize=(10, 5))
-    plt.bar(purchase_items, purchase_totals, color='blue')
-    plt.title('Total Purchases by Item')
-    plt.xlabel('Items')
-    plt.ylabel('Total Quantity')
-    plt.xticks(rotation=45)
-    plt.tight_layout()
+    # Create a bar chart for purchase totals using Plotly
+    purchase_bar_chart = go.Figure(data=[go.Bar(x=purchase_items, y=purchase_totals, marker_color='blue')])
+    purchase_bar_chart.update_layout(
+        title='Total Purchases by Item',
+        xaxis_title='Items',
+        yaxis_title='Total Quantity',
+    )
+    purchase_bar_url = plot(purchase_bar_chart, output_type='div')
 
-    # Save purchase plot to a PNG image
-    buf = io.BytesIO()
-    plt.savefig(buf, format='png')
-    plt.close(plt.gcf())
-    buf.seek(0)
-    purchase_image_png = buf.getvalue()
-    buf.close()
-    purchase_plot_url = base64.b64encode(purchase_image_png).decode('utf-8')
-    purchase_plot_url = f'data:image/png;base64,{purchase_plot_url}'
+    # Create a bar chart for stock movement totals using Plotly
+    stock_bar_chart = go.Figure(data=[go.Bar(x=stock_items, y=stock_totals, marker_color='orange')])
+    stock_bar_chart.update_layout(
+        title='Total Stock Movement by Item',
+        xaxis_title='Items',
+        yaxis_title='Total Quantity',
+    )
+    stock_bar_url = plot(stock_bar_chart, output_type='div')
 
-    # Create a bar plot for stock movement totals
-    plt.figure(figsize=(10, 5))
-    plt.bar(stock_items, stock_totals, color='orange')
-    plt.title('Total Stock Movement by Item')
-    plt.xlabel('Items')
-    plt.ylabel('Total Quantity')
-    plt.xticks(rotation=45)
-    plt.tight_layout()
-
-    # Save stock movement plot to a PNG image
-    buf = io.BytesIO()
-    plt.savefig(buf, format='png')
-    plt.close(plt.gcf())
-    buf.seek(0)
-    stock_image_png = buf.getvalue()
-    buf.close()
-    stock_plot_url = base64.b64encode(stock_image_png).decode('utf-8')
-    stock_plot_url = f'data:image/png;base64,{stock_plot_url}'
-
-     # Prepare purchase summary
+    # Prepare purchase summary
     purchase_summary = {
         'total_items': len(purchase_items),
         'total_quantity': sum(purchase_totals),
-        'item_details': zip(purchase_items, purchase_totals)  # Pair items with totals
-    }   
+        'item_details': zip(purchase_items, purchase_totals)
+    }
 
-    # Create a pie chart for stock movement
-    pie_fig = go.Figure(data=[go.Pie(labels=purchase_items, values=purchase_totals)])
-    pie_plot_url1 = plot(pie_fig, output_type='div')
+    # Create a pie chart for purchase totals using Plotly
+    purchase_pie_chart = go.Figure(data=[go.Pie(labels=purchase_items, values=purchase_totals)])
+    purchase_pie_url = plot(purchase_pie_chart, output_type='div')
 
-    # Create a pie chart for stock movement
-    pie_fig = go.Figure(data=[go.Pie(labels=stock_items, values=stock_totals)])
-    pie_plot_url = plot(pie_fig, output_type='div')
+    # Create a pie chart for stock movement totals using Plotly
+    stock_pie_chart = go.Figure(data=[go.Pie(labels=stock_items, values=stock_totals)])
+    stock_pie_url = plot(stock_pie_chart, output_type='div')
 
-    # Return render with plot URLs
+    # Return render with Plotly chart URLs
     return render(request, 'admin_temp/admin_analysis.html', {
-        'purchase_plot_url': purchase_plot_url,
-        'stock_plot_url': stock_plot_url,
-        'purchase_totals': purchase_totals,
+        'purchase_bar_url': purchase_bar_url,
+        'stock_bar_url': stock_bar_url,
         'purchase_summary': purchase_summary,
-        'pie_plot_url1': pie_plot_url1,
-        'pie_plot_url': pie_plot_url,
-        'stock_summary': zip(stock_items, stock_totals),  # Use zip to pair items with totals for stock
+        'purchase_pie_url': purchase_pie_url,
+        'stock_pie_url': stock_pie_url,
+        'stock_summary': zip(stock_items, stock_totals),
     })
-
 
 @login_required(login_url="sign_in")
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def analysis(request):
-    # Query purchase and stock movement data
-    purchase_data = P_S_Info.objects.filter(SorP='purchase',created_by=request.user).values('item').annotate(total=Sum('quantity'))
-    stock_data = P_S_Info.objects.filter(SorP='stock_Movement',created_by=request.user).values('item').annotate(total=Sum('quantity'))
+    # Query purchase and stock movement data for the logged-in user
+    purchase_data = P_S_Info.objects.filter(SorP='purchase', created_by=request.user).values('item').annotate(total=Sum('quantity'))
+    stock_data = P_S_Info.objects.filter(SorP='stock_Movement', created_by=request.user).values('item').annotate(total=Sum('quantity'))
 
     # Prepare data for plotting purchase totals
     purchase_items = [data['item'] for data in purchase_data]
@@ -388,68 +362,47 @@ def analysis(request):
     stock_items = [data['item'] for data in stock_data]
     stock_totals = [data['total'] for data in stock_data]
 
-    # Create and save the purchase plot
-    fig1 = plt.figure(figsize=(10, 5))
-    plt.bar(purchase_items, purchase_totals, color='blue')
-    plt.title('Total Purchases by Item')
-    plt.xlabel('Items')
-    plt.ylabel('Total Quantity')
-    plt.xticks(rotation=45)
-    plt.tight_layout()
+    # Create a bar chart for purchase totals using Plotly
+    purchase_bar_chart = go.Figure(data=[go.Bar(x=purchase_items, y=purchase_totals, marker_color='blue')])
+    purchase_bar_chart.update_layout(
+        title='Total Purchases by Item',
+        xaxis_title='Items',
+        yaxis_title='Total Quantity',
+    )
+    purchase_bar_url = plot(purchase_bar_chart, output_type='div')
 
-    # Save purchase plot to a PNG image
-    buf_purchase = io.BytesIO()
-    fig1.savefig(buf_purchase, format='png')
-    plt.close(fig1)  # Close the specific figure instance
-    buf_purchase.seek(0)
-    purchase_image_png = buf_purchase.getvalue()
-    buf_purchase.close()
-    purchase_plot_url = base64.b64encode(purchase_image_png).decode('utf-8')
-    purchase_plot_url = f'data:image/png;base64,{purchase_plot_url}'
+    # Create a bar chart for stock movement totals using Plotly
+    stock_bar_chart = go.Figure(data=[go.Bar(x=stock_items, y=stock_totals, marker_color='orange')])
+    stock_bar_chart.update_layout(
+        title='Total Stock Movement by Item',
+        xaxis_title='Items',
+        yaxis_title='Total Quantity',
+    )
+    stock_bar_url = plot(stock_bar_chart, output_type='div')
 
-    # Create and save the stock movement plot
-    fig2 = plt.figure(figsize=(10, 5))
-    plt.bar(stock_items, stock_totals, color='orange')
-    plt.title('Total Stock Movement by Item')
-    plt.xlabel('Items')
-    plt.ylabel('Total Quantity')
-    plt.xticks(rotation=45)
-    plt.tight_layout()
-
-    # Save stock movement plot to a PNG image
-    buf_stock = io.BytesIO()
-    fig2.savefig(buf_stock, format='png')
-    plt.close(fig2)  # Close the specific figure instance
-    buf_stock.seek(0)
-    stock_image_png = buf_stock.getvalue()
-    buf_stock.close()
-    stock_plot_url = base64.b64encode(stock_image_png).decode('utf-8')
-    stock_plot_url = f'data:image/png;base64,{stock_plot_url}'
-
-     # Prepare purchase summary
+    # Prepare purchase summary
     purchase_summary = {
         'total_items': len(purchase_items),
         'total_quantity': sum(purchase_totals),
-        'item_details': zip(purchase_items, purchase_totals)  # Pair items with totals
-    }   
+        'item_details': zip(purchase_items, purchase_totals)
+    }
 
-    # Create a pie chart for stock movement
-    pie_fig = go.Figure(data=[go.Pie(labels=purchase_items, values=purchase_totals)])
-    pie_plot_url1 = plot(pie_fig, output_type='div')
+    # Create a pie chart for purchase totals using Plotly
+    purchase_pie_chart = go.Figure(data=[go.Pie(labels=purchase_items, values=purchase_totals)])
+    purchase_pie_url = plot(purchase_pie_chart, output_type='div')
 
-    # Create a pie chart for stock movement
-    pie_fig = go.Figure(data=[go.Pie(labels=stock_items, values=stock_totals)])
-    pie_plot_url = plot(pie_fig, output_type='div')
+    # Create a pie chart for stock movement totals using Plotly
+    stock_pie_chart = go.Figure(data=[go.Pie(labels=stock_items, values=stock_totals)])
+    stock_pie_url = plot(stock_pie_chart, output_type='div')
 
-    # Return render with plot URLs
+    # Return render with Plotly chart URLs
     return render(request, 'analysis.html', {
-        'purchase_plot_url': purchase_plot_url,
-        'stock_plot_url': stock_plot_url,
-        'purchase_totals': purchase_totals,
+        'purchase_bar_url': purchase_bar_url,
+        'stock_bar_url': stock_bar_url,
         'purchase_summary': purchase_summary,
-        'pie_plot_url1': pie_plot_url1,
-        'pie_plot_url': pie_plot_url,
-        'stock_summary': zip(stock_items, stock_totals),  # Use zip to pair items with totals for stock
+        'purchase_pie_url': purchase_pie_url,
+        'stock_pie_url': stock_pie_url,
+        'stock_summary': zip(stock_items, stock_totals),
     })
 
 @login_required

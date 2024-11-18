@@ -13,9 +13,13 @@
     <div class="container mt-5">
         <h1 class="text-center">Data Analysis</h1>
 
+        <!-- Purchase Bar Chart -->
         <h2 class="mt-4">Purchase Totals</h2>
-        <img src="{{ purchase_plot_url }}" alt="Total Purchases by Item" class="img-fluid mb-4">
+        <div>
+            {{ purchase_bar_url|safe }}  <!-- Plotly Bar Chart for Purchase Totals -->
+        </div>
 
+        <!-- Purchase Summary -->
         <h2>Purchase Summary</h2>
         <p>Total Items: {{ purchase_summary.total_items }}</p>
         <p>Total Quantity Purchased: {{ purchase_summary.total_quantity }}</p>
@@ -26,9 +30,13 @@
             {% endfor %}
         </ul>
 
+        <!-- Stock Movement Bar Chart -->
         <h2 class="mt-4">Stock Movement Totals</h2>
-        <img src="{{ stock_plot_url }}" alt="Total Stock Movement by Item" class="img-fluid mb-4">
+        <div>
+            {{ stock_bar_url|safe }}  <!-- Plotly Bar Chart for Stock Movement Totals -->
+        </div>
 
+        <!-- Stock Movement Summary -->
         <h2>Stock Movement Summary</h2>
         <ul>
             {% for item, total in stock_summary %}
@@ -36,14 +44,16 @@
             {% endfor %}
         </ul>
 
+        <!-- Purchase Distribution (Pie Chart) -->
         <h2 class="mt-4">Purchase Distribution</h2>
         <div>
-            {{ pie_plot_url1|safe }}  <!-- Use safe filter to render the HTML -->
+            {{ purchase_pie_url|safe }}  <!-- Plotly Pie Chart for Purchase Distribution -->
         </div>
 
+        <!-- Stock Movement Distribution (Pie Chart) -->
         <h2 class="mt-4">Stock Movement Distribution</h2>
         <div>
-            {{ pie_plot_url|safe }}  <!-- Use safe filter to render the HTML -->
+            {{ stock_pie_url|safe }}  <!-- Plotly Pie Chart for Stock Movement Distribution -->
         </div>
 
     </div>
