@@ -1,15 +1,15 @@
 from django.contrib.auth import authenticate, login
-from django.shortcuts import render, redirect
 from .models import CustomUser
 from django.contrib.auth.hashers import make_password  # To hash the password
 from django.contrib import messages  # To display error messages
-
+from django.views.decorators.cache import cache_control
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
-from django.http import HttpResponse
-from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import CustomUser
 
+
+@login_required(login_url="sign_in")
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def user_list(request):
     users = CustomUser.objects.filter(user_type='normal')
     return render(request, 'user_list.html', {'users': users})
@@ -19,6 +19,14 @@ def set_inactive(request, user_id):
     user.is_active = False
     user.save()
     return redirect('user_list')
+
+def delete_user(request):
+    if request.method == 'POST':
+        user_id = request.POST.get('user_id')
+        user = get_object_or_404(CustomUser, id=user_id)
+        user.delete()
+      #  messages.success(request, "User deleted successfully.")
+        return redirect('user_list')  # Redirect back to the user list page
 
 def update_user(request):
     if request.method == "POST":
@@ -102,6 +110,9 @@ def admin_useradd(request):
     return render(request, 'user/add_user.html')
 
 def sign_in(request):
+
+    
+
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -109,7 +120,7 @@ def sign_in(request):
         # Authenticate using the custom backend
         user = authenticate(request, username=username, password=password)
 
-        if user is not None:
+        if user is not None and user.is_active:
             login(request, user)  # Log the user in
             if user.user_type == 'normal':
                 return redirect('home')  # Redirect normal users to home
@@ -121,6 +132,10 @@ def sign_in(request):
     return render(request, 'user/sign_in.html')
 
 def custom_logout(request):
+    
+    storage = messages.get_messages(request)
+    list(storage)  # Consume messages to clear them
+
     # Log the user out
     logout(request)
 

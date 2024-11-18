@@ -6,29 +6,36 @@ from openpyxl import Workbook
 import matplotlib.pyplot as plt
 from plotly.offline import plot
 import io
+from .forms import P_S_InfoForm
+from django.contrib import messages
+from django.views.decorators.cache import cache_control
+from django.contrib.auth.decorators import login_required
 import plotly.graph_objs as go
-import urllib, base64
+import base64
 from django.shortcuts import redirect, get_object_or_404
 from . models import P_S_Info
 from django.contrib.auth import get_user_model
-from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
 @login_required(login_url="sign_in")
-def dashbord(request):
-    if request.POST:
-        SorP=request.POST.get('SorP')
-        date=request.POST.get('date')
-        mr_mh_no=request.POST.get('mr_mh_no')
-        item=request.POST.get('item')
-        unit_of_measure=request.POST.get('unit_of_measure')
-        quantity=request.POST.get('quantity')
-        supplier_name=request.POST.get('supplier_name')
-        project_no=request.POST.get('project_no')
-        invoice_no=request.POST.get('invoice_no')
-        detail_obj=P_S_Info(SorP=SorP,date=date,mr_mh_no=mr_mh_no,item=item,unit_of_measure=unit_of_measure,quantity=quantity,supplier_name=supplier_name,project_no=project_no,invoice_no=invoice_no,created_by=request.user)
-        detail_obj.save()
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+def dashboard(request):
+    if request.method == 'POST':
+        form = P_S_InfoForm(request.POST)
+        if form.is_valid():
+            detail_obj = form.save(commit=False)
+            detail_obj.created_by = request.user
+            detail_obj.save()
+            messages.success(request, "Entry saved successfully.")
+            return redirect('home')  # Redirect or reload the page after successful save
+        else:
+            # Collect form errors to show to the user
+            messages.error(request, "Please correct the errors below.")
+    else:
+        form = P_S_InfoForm()
 
-    return render(request,'first.html')
+    return render(request, 'first.html', {'form': form})
 
 
 
@@ -36,6 +43,7 @@ def dashbord(request):
 User = get_user_model()  # Use the custom user model
 
 @login_required(login_url="sign_in")
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def admin_dashboard(request):
     users = User.objects.filter(user_type ='normal')  # Fetch all users for the dropdown list
     selected_user_id = request.session.get('selected_user_id')
@@ -48,6 +56,7 @@ def admin_dashboard(request):
     return render(request, 'admin_temp/admin_dash.html', {'user_id': selected_user_id, 'users': users})
 
 @login_required(login_url="sign_in")
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def purchase_admin(request, user_id):
     if (user_id =='all'):
         purchase_info = P_S_Info.objects.filter(SorP="purchase")
@@ -58,6 +67,7 @@ def purchase_admin(request, user_id):
         return render(request,'admin_temp/admin_purchase.html',{'entries': purchase_info})
 
 @login_required(login_url="sign_in")
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def stock_movement_admin(request, user_id):
     if (user_id =='all'):
         sale_info = P_S_Info.objects.filter(SorP="stock_Movement")
@@ -67,7 +77,8 @@ def stock_movement_admin(request, user_id):
         sale_info = P_S_Info.objects.filter(SorP="stock_Movement",created_by=user)
         return render(request,'admin_temp/admin_stock_movement.html',{'entries': sale_info})
 
-@login_required(login_url="sign_in") 
+@login_required(login_url="sign_in")
+@cache_control(no_cache=True, must_revalidate=True, no_store=True) 
 def admin_stock(request, user_id):
     if (user_id =='all'):
          purchase_quantities = P_S_Info.objects.filter(SorP='purchase').values('item').annotate(total=Sum('quantity'))
@@ -103,16 +114,19 @@ def admin_stock(request, user_id):
     return render(request,'admin_temp/admin_stock.html', {'stocks': stock_summary.items()})
 
 @login_required(login_url="sign_in")  
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def purchase(request):
     purchase_info = P_S_Info.objects.filter(SorP="purchase",created_by=request.user)
     return render(request,'purchase.html',{'entries': purchase_info})
 
 @login_required(login_url="sign_in")
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def stockmovement(request):
     sale_info = P_S_Info.objects.filter(SorP="stock_Movement",created_by=request.user)
     return render(request,'stockmovement.html',{'entries': sale_info})
 
 @login_required(login_url="sign_in")
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def stock(request):
     purchase_quantities = P_S_Info.objects.filter(SorP='purchase',created_by=request.user).values('item').annotate(total=Sum('quantity'))
     
@@ -159,11 +173,11 @@ def update_entry(request):
         entry.date = request.POST.get('date')
         entry.mr_mh_no = request.POST.get('mr_mh_no')
         entry.item = request.POST.get('item')
-        entry.unit_of_measure = request.POST.get('unit_of_measure')
+        entry.unit_of_measure = request.POST.get('unit')
         entry.quantity = request.POST.get('quantity')
-        entry.supplier_name = request.POST.get('supplier_name')
-        entry.project_no = request.POST.get('project_no')
-        entry.invoice_no = request.POST.get('invoice_no')
+        entry.supplier_name = request.POST.get('supplier')
+        entry.project_no = request.POST.get('project')
+        entry.invoice_no = request.POST.get('invoice')
 
         entry.save()
         return redirect(request.META.get('HTTP_REFERER', 'home')) 
@@ -275,6 +289,7 @@ def export_to_excel(request, record_type):
     return response
 
 @login_required(login_url="sign_in")
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def admin_analysis(request, user_id):
     if (user_id =='all'):
         purchase_data = P_S_Info.objects.filter(SorP='purchase').values('item').annotate(total=Sum('quantity'))
@@ -350,7 +365,6 @@ def admin_analysis(request, user_id):
     return render(request, 'admin_temp/admin_analysis.html', {
         'purchase_plot_url': purchase_plot_url,
         'stock_plot_url': stock_plot_url,
-        'purchase_plot_url': stock_plot_url,
         'purchase_totals': purchase_totals,
         'purchase_summary': purchase_summary,
         'pie_plot_url1': pie_plot_url1,
@@ -360,9 +374,11 @@ def admin_analysis(request, user_id):
 
 
 @login_required(login_url="sign_in")
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def analysis(request):
-    purchase_data = P_S_Info.objects.filter(SorP='purchase').values('item').annotate(total=Sum('quantity'))
-    stock_data = P_S_Info.objects.filter(SorP='stock_Movement').values('item').annotate(total=Sum('quantity'))
+    # Query purchase and stock movement data
+    purchase_data = P_S_Info.objects.filter(SorP='purchase',created_by=request.user).values('item').annotate(total=Sum('quantity'))
+    stock_data = P_S_Info.objects.filter(SorP='stock_Movement',created_by=request.user).values('item').annotate(total=Sum('quantity'))
 
     # Prepare data for plotting purchase totals
     purchase_items = [data['item'] for data in purchase_data]
@@ -372,8 +388,8 @@ def analysis(request):
     stock_items = [data['item'] for data in stock_data]
     stock_totals = [data['total'] for data in stock_data]
 
-    # Create a bar plot for purchase totals
-    plt.figure(figsize=(10, 5))
+    # Create and save the purchase plot
+    fig1 = plt.figure(figsize=(10, 5))
     plt.bar(purchase_items, purchase_totals, color='blue')
     plt.title('Total Purchases by Item')
     plt.xlabel('Items')
@@ -382,17 +398,17 @@ def analysis(request):
     plt.tight_layout()
 
     # Save purchase plot to a PNG image
-    buf = io.BytesIO()
-    plt.savefig(buf, format='png')
-    plt.close(plt.gcf())
-    buf.seek(0)
-    purchase_image_png = buf.getvalue()
-    buf.close()
+    buf_purchase = io.BytesIO()
+    fig1.savefig(buf_purchase, format='png')
+    plt.close(fig1)  # Close the specific figure instance
+    buf_purchase.seek(0)
+    purchase_image_png = buf_purchase.getvalue()
+    buf_purchase.close()
     purchase_plot_url = base64.b64encode(purchase_image_png).decode('utf-8')
     purchase_plot_url = f'data:image/png;base64,{purchase_plot_url}'
 
-    # Create a bar plot for stock movement totals
-    plt.figure(figsize=(10, 5))
+    # Create and save the stock movement plot
+    fig2 = plt.figure(figsize=(10, 5))
     plt.bar(stock_items, stock_totals, color='orange')
     plt.title('Total Stock Movement by Item')
     plt.xlabel('Items')
@@ -401,12 +417,12 @@ def analysis(request):
     plt.tight_layout()
 
     # Save stock movement plot to a PNG image
-    buf = io.BytesIO()
-    plt.savefig(buf, format='png')
-    plt.close(plt.gcf())
-    buf.seek(0)
-    stock_image_png = buf.getvalue()
-    buf.close()
+    buf_stock = io.BytesIO()
+    fig2.savefig(buf_stock, format='png')
+    plt.close(fig2)  # Close the specific figure instance
+    buf_stock.seek(0)
+    stock_image_png = buf_stock.getvalue()
+    buf_stock.close()
     stock_plot_url = base64.b64encode(stock_image_png).decode('utf-8')
     stock_plot_url = f'data:image/png;base64,{stock_plot_url}'
 
@@ -429,10 +445,23 @@ def analysis(request):
     return render(request, 'analysis.html', {
         'purchase_plot_url': purchase_plot_url,
         'stock_plot_url': stock_plot_url,
-        'purchase_plot_url': stock_plot_url,
         'purchase_totals': purchase_totals,
         'purchase_summary': purchase_summary,
         'pie_plot_url1': pie_plot_url1,
         'pie_plot_url': pie_plot_url,
         'stock_summary': zip(stock_items, stock_totals),  # Use zip to pair items with totals for stock
     })
+
+@login_required
+@csrf_exempt
+def get_stock_quantity(request):
+    item_name = request.GET.get('item')
+    if not item_name:
+        return JsonResponse({'success': False, 'message': 'Item name is required.'})
+    
+    try:
+        # Calculate available stock for the current user
+        available_stock = P_S_Info.get_available_stock(item_name, request.user)
+        return JsonResponse({'success': True, 'stock_quantity': available_stock})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)})

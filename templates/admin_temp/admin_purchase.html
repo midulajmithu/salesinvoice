@@ -1,68 +1,80 @@
 <!DOCTYPE html>
 <html lang="en">
-
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase Records</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
 <body>
     
-  {% include 'admin_temp/admin_navbar.html' %}
-  {% include 'update.html' %}
-  <div class="text-end mt-3 pe-3">
-    <a href="{% url 'admin_export_to_excel' record_type='purchase' user_id=user_id %}" class="btn btn-success">Download</a>
-  </div> 
-  <br>
-<div class="container">      
-<table class="table">
-    <thead>
-    <tr class="table-danger">
-        <th>Date</th>
-        <th>MR or MH no</th>
-        <th>Item</th>
-        <th>Unit of messure</th>
-        <th>Quantity</th>
-        <th>Supplier Name</th>
-        <th>Project no</th>
-        <th>Invoice no</th>
-        <th>Action</th>
-    </tr>
-    
-</thead>
-<tbody>
-    {% for entry in entries %}
-        <tr>
-            <td>{{ entry.date }}</td>
-            <td>{{ entry.mr_mh_no }}</td>
-            <td>{{ entry.item }}</td>
-            <td>{{ entry.unit_of_measure }}</td>
-            <td>{{ entry.quantity }}</td>
-            <td>{{ entry.supplier_name }}</td>
-            <td>{{ entry.project_no }}</td>
-            <td>{{ entry.invoice_no }}</td>
+    {% include 'admin_temp/admin_navbar.html' %}
+    {% include 'update.html' %}
 
-            <td>
+    <!-- Export Icon Section with Responsive Alignment -->
+    <div class="container mt-3">
+        <div class="d-flex justify-content-end">
+            <a href="{% url 'admin_export_to_excel' record_type='purchase' user_id=user_id %}" class="download-icon">
+                <i class="fas fa-download" style="font-size: 1.5em;"></i>
+            </a>
+        </div>
+    </div>
 
-                 <!-- Update Button that triggers the modal -->
-                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#updateModal" 
-                 data-entry-id="{{ entry.id }}" 
-                 data-date="{{ entry.date }}" 
-                 data-mr-mh-no="{{ entry.mr_mh_no }}"
-                 data-item="{{ entry.item }}" 
-                 data-unit="{{ entry.unit_of_measure }}"
-                 data-quantity="{{ entry.quantity }}" 
-                 data-supplier="{{ entry.supplier_name }}" 
-                 data-project="{{ entry.project_no }}"
-                 data-invoice="{{ entry.invoice_no }}">
-             Update
-         </button>
+    <!-- Responsive Table Section -->
+    <div class="container my-4">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr class="table-danger">
+                        <th>Date</th>
+                        <th>MR or MH no</th>
+                        <th>Item</th>
+                        <th>Unit of Measure</th>
+                        <th>Quantity</th>
+                        <th>Supplier Name</th>
+                        <th>Project no</th>
+                        <th>Invoice no</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in entries %}
+                    <tr>
+                        <td>{{ entry.date }}</td>
+                        <td>{{ entry.mr_mh_no }}</td>
+                        <td>{{ entry.item }}</td>
+                        <td>{{ entry.unit_of_measure }}</td>
+                        <td>{{ entry.quantity }}</td>
+                        <td>{{ entry.supplier_name }}</td>
+                        <td>{{ entry.project_no }}</td>
+                        <td>{{ entry.invoice_no }}</td>
+                        <td>
+                            <!-- Update Button triggers modal -->
+                            <button type="button" class="btn btn-sm btn-primary mb-1" data-bs-toggle="modal" data-bs-target="#updateModal" 
+                                    data-entry-id="{{ entry.id }}" 
+                                    data-date="{{ entry.date|date:'Y-m-d' }}" 
+                                    data-mr-mh-no="{{ entry.mr_mh_no }}"
+                                    data-item="{{ entry.item }}" 
+                                    data-unit="{{ entry.unit_of_measure }}"
+                                    data-quantity="{{ entry.quantity }}" 
+                                    data-supplier="{{ entry.supplier_name }}" 
+                                    data-project="{{ entry.project_no }}"
+                                    data-invoice="{{ entry.invoice_no }}">
+                                Update
+                            </button>
+                            <!-- Delete Form -->
+                            <form action="{% url 'delete_entry' entry.id %}" method="post" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-                <form action="{% url 'delete_entry' entry.id %}" method="post" style="display:inline;">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger">Delete</button>
-                </form>
-            </td>
-
-        </tr>
-        {% endfor %}
-</tbody>
-</table>
-</div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

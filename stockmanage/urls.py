@@ -17,7 +17,7 @@ Including another URLconf
 from django.urls import path
 from . import views
 urlpatterns = [
-    path('home/',views.dashbord,name='home'),
+    path('home/',views.dashboard,name='home'),
     path('purchase/',views.purchase,name='purchase'),
     path('stockmovement/',views.stockmovement,name='sale'),
     path('stock/',views.stock,name='stock'),
@@ -30,6 +30,7 @@ urlpatterns = [
     path('admin_purchase/<str:user_id>/', views.purchase_admin, name='purchase_admin'),
     path('admin_stockmovement/<str:user_id>/', views.stock_movement_admin, name='stockmovement_admin'),
     path('admin_stock/<str:user_id>/', views.admin_stock, name='stock_admin'),
+    path('api/get-stock-quantity/', views.get_stock_quantity, name='get_stock_quantity'),
     path('admin_analysis/<str:user_id>/', views.admin_analysis, name='analysis_admin')
 
 ]

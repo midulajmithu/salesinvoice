@@ -27,7 +27,6 @@
                 <tr>
                     <th>Username</th>
                     <th>Name</th>
-                    <th>User Type</th>
                     <th>Status</th>
                     <th>Actions</th>
                 </tr>
@@ -37,7 +36,6 @@
                 <tr>
                     <td>{{ user.username }}</td>
                     <td>{{ user.name }}</td>
-                    <td>{{ user.user_type }}</td>
                     <td>
                         {% if user.is_active %}
                             Active
@@ -57,6 +55,13 @@
                     Edit
                 </button>
                         <a href="{% url 'set_inactive' user.id %}" class="btn btn-warning">Set to Inactive</a>
+                        <button class="btn btn-danger" 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#deleteUserModal"
+                        data-id="{{ user.id }}"
+                        data-username="{{ user.username }}">
+                    Delete
+                </button>
                     </td>
                 </tr>
                 {% endfor %}
@@ -105,6 +110,30 @@
         </div>
     </div>
 
+
+    <!-- Delete User Modal -->
+<div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{% url 'delete_user' %}">
+                {% csrf_token %}
+                <input type="hidden" name="user_id" id="delete-user-id">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteUserModalLabel">Delete User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete the user <strong id="delete-username"></strong>?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
     <!-- Include Bootstrap JS and Popper -->
 
     
@@ -122,6 +151,15 @@
             document.getElementById('status').value = button.getAttribute('data-status') === 'True' ? 'True' : 'False';
             document.getElementById('password').value = '';
         });
+
+        var deleteUserModal = document.getElementById('deleteUserModal');
+deleteUserModal.addEventListener('show.bs.modal', function (event) {
+    var button = event.relatedTarget;
+    
+    // Populate modal fields with data attributes
+    document.getElementById('delete-user-id').value = button.getAttribute('data-id');
+    document.getElementById('delete-username').textContent = button.getAttribute('data-username');
+});
     </script>
 </body>
 </html>

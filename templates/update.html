@@ -4,50 +4,57 @@
     </head>
 
     <body>
-        <!-- Update Modal -->
+<!-- Update Modal -->
 <div class="modal fade" id="updateModal" tabindex="-1" aria-labelledby="updateModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form method="POST" action="{% url 'update_entry' %}">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateModalLabel">Update Entry</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'update_entry' %}" id="update-form" class="needs-validation" novalidate>
                 {% csrf_token %}
-                <div class="modal-header">
-                    <h5 class="modal-title" id="updateModalLabel">Update Entry</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
                 <div class="modal-body">
-                    <input type="hidden" name="entry_id" id="entry-id">
-                    
+                    <input type="hidden" name="entry_id" id="modal-entry-id">
                     <div class="mb-3">
-                        <label for="date" class="form-label">Date</label>
-                        <input type="date" class="form-control" name="date" id="date">
+                        <label for="modal-date" class="form-label">Date</label>
+                        <input type="date" class="form-control" name="date" id="modal-date" required>
+                        <div class="invalid-feedback">This field is required.</div>
                     </div>
                     <div class="mb-3">
-                        <label for="mr_mh_no" class="form-label">MR or MH No</label>
-                        <input type="text" class="form-control" name="mr_mh_no" id="mr-mh-no">
+                        <label for="modal-mr-mh-no" class="form-label">MR or MH No</label>
+                        <input type="text" class="form-control" name="mr_mh_no" id="modal-mr-mh-no" required>
+                        <div class="invalid-feedback">This field is required.</div>
                     </div>
                     <div class="mb-3">
-                        <label for="item" class="form-label">Item</label>
-                        <input type="text" class="form-control" name="item" id="item">
+                        <label for="modal-item" class="form-label">Item</label>
+                        <input type="text" class="form-control" name="item" id="modal-item" required>
+                        <div class="invalid-feedback">This field is required.</div>
                     </div>
                     <div class="mb-3">
-                        <label for="unit_of_measure" class="form-label">Unit of Measure</label>
-                        <input type="text" class="form-control" name="unit_of_measure" id="unit-of-measure">
+                        <label for="modal-unit" class="form-label">Unit of Measure</label>
+                        <input type="text" class="form-control" name="unit" id="modal-unit" required>
+                        <div class="invalid-feedback">Please provide the unit of measure.</div>
                     </div>
                     <div class="mb-3">
-                        <label for="quantity" class="form-label">Quantity</label>
-                        <input type="number" class="form-control" name="quantity" id="quantity">
+                        <label for="modal-quantity" class="form-label">Quantity</label>
+                        <input type="number" class="form-control" name="quantity" id="modal-quantity" required>
+                        <div class="invalid-feedback">Please provide a valid quantity.</div>
                     </div>
                     <div class="mb-3">
-                        <label for="supplier_name" class="form-label">Supplier Name</label>
-                        <input type="text" class="form-control" name="supplier_name" id="supplier-name">
+                        <label for="modal-supplier" class="form-label">Supplier Name</label>
+                        <input type="text" class="form-control" name="supplier" id="modal-supplier" required>
+                        <div class="invalid-feedback">Please provide the supplier's name.</div>
                     </div>
                     <div class="mb-3">
-                        <label for="project_no" class="form-label">Project No</label>
-                        <input type="text" class="form-control" name="project_no" id="project-no">
+                        <label for="modal-project" class="form-label">Project No</label>
+                        <input type="text" class="form-control" name="project" id="modal-project" required>
+                        <div class="invalid-feedback">Please provide a project number.</div>
                     </div>
                     <div class="mb-3">
-                        <label for="invoice_no" class="form-label">Invoice No</label>
-                        <input type="text" class="form-control" name="invoice_no" id="invoice-no">
+                        <label for="modal-invoice" class="form-label">Invoice No</label>
+                        <input type="text" class="form-control" name="invoice" id="modal-invoice" required>
+                        <div class="invalid-feedback">Please provide an invoice number.</div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -59,29 +66,55 @@
     </div>
 </div>
 
+
 {% block inventery %}
       {% endblock %}
 
 
+<!-- Include Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
 
+<!-- JavaScript for Validation -->
 <script>
-    var updateModal = document.getElementById('updateModal');
-    updateModal.addEventListener('show.bs.modal', function (event) {
-        var button = event.relatedTarget;
-        
-        // Get data attributes from the button
-        document.getElementById('entry-id').value = button.getAttribute('data-entry-id');
-        
-        document.getElementById('date').value = button.getAttribute('data-date');
-        document.getElementById('mr-mh-no').value = button.getAttribute('data-mr-mh-no');
-        document.getElementById('item').value = button.getAttribute('data-item');
-        document.getElementById('unit-of-measure').value = button.getAttribute('data-unit');
-        document.getElementById('quantity').value = button.getAttribute('data-quantity');
-        document.getElementById('supplier-name').value = button.getAttribute('data-supplier');
-        document.getElementById('project-no').value = button.getAttribute('data-project');
-        document.getElementById('invoice-no').value = button.getAttribute('data-invoice');
+    document.addEventListener('DOMContentLoaded', function () {
+        var updateModal = document.getElementById('updateModal');
+
+        // Populate modal fields when it opens
+        updateModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget; // Button that triggered the modal
+            document.getElementById('modal-entry-id').value = button.getAttribute('data-entry-id');
+            document.getElementById('modal-date').value = button.getAttribute('data-date');
+            document.getElementById('modal-mr-mh-no').value = button.getAttribute('data-mr-mh-no');
+            document.getElementById('modal-item').value = button.getAttribute('data-item');
+            document.getElementById('modal-unit').value = button.getAttribute('data-unit');
+            document.getElementById('modal-quantity').value = button.getAttribute('data-quantity');
+            document.getElementById('modal-supplier').value = button.getAttribute('data-supplier');
+            document.getElementById('modal-project').value = button.getAttribute('data-project');
+            document.getElementById('modal-invoice').value = button.getAttribute('data-invoice');
+        });
+
+        // Validate form on submit
+        var updateForm = document.getElementById('update-form');
+        updateForm.addEventListener('submit', function (event) {
+            var isValid = true;
+
+            // Validate all input fields
+            var inputs = updateForm.querySelectorAll('input');
+            inputs.forEach(function (input) {
+                if (!input.value.trim()) {
+                    input.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    input.classList.remove('is-invalid');
+                }
+            });
+
+            if (!isValid) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        });
     });
 </script>
 

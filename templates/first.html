@@ -1,104 +1,192 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <style>
-      .form-container {
+        .form-container {
             background-color: #ecf6fe; /* Light grey background */
             border-radius: 15px; /* Rounded corners */
             padding: 30px; /* Padding inside the container */
             box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Soft shadow for depth */
         }
-      /* Remove default margin on body and ensure full viewport height without scrolling */
-      body, html {
-          margin: 0;
-          padding: 0;
-          min-height: 100vh;
-          background-color: #ffffffff;
-      }
 
-  </style>
-  </head>
+        /* Remove default margin on body and ensure full viewport height without scrolling */
+        body, html {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background-color: #ffffff;
+        }
 
+    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Page</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
 <body>
-  {% include 'navbar.html' %}
-<br>
+    {% include 'navbar.html' %}
+    <br>
 
-
-
-  <div class="container d-flex justify-content-center align-items-center">
-    <div class="form-container col-md-8 col-lg-6 mb-2">
-        <form method="post" enctype="multipart/form-data">
-          {% csrf_token %}
-            <div class="form-group row mb-2">
-                <label for="SorP" class="col-sm-3 col-form-label">Entry type</label>
-                <div class="col-sm-9">
-                    <select name="SorP" id="SorP" class="form-control">
-                      <option value="purchase">purchase</option>
-                      <option value="stock_Movement">stock_Movement</option>
-                    </select>
+    <div class="container d-flex justify-content-center align-items-center">
+        <div class="form-container col-12 col-md-8 col-lg-6 mb-4">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form.non_field_errors }}
+                <div class="form-group row mb-2">
+                    <label for="SorP" class="col-sm-3 col-form-label">Entry type</label>
+                    <div class="col-sm-9">
+                        {{ form.SorP }}
+                        <div class="text-danger">
+                            {{ form.SorP.errors }}
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div class="form-group row mb-2">
-                <label for="inputPassword3" class="col-sm-3 col-form-label">Date</label>
-                <div class="col-sm-9">
-                    <input type="date" class="form-control" name="date" id="date" placeholder="Date">
+                <div class="form-group row mb-2">
+                    <label for="date" class="col-sm-3 col-form-label">Date</label>
+                    <div class="col-sm-9">
+                        {{ form.date }}
+                        <div class="text-danger">
+                            {{ form.date.errors }}
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div class="form-group row mb-2">
-              <label for="mr_mh_no" class="col-sm-3 col-form-label">MR or MH no</label>
-              <div class="col-sm-9">
-                  <input type="text" class="form-control" name="mr_mh_no" id="mr_mh_no" placeholder="MR or MH no">
-              </div>
-          </div>
-          <div class="form-group row mb-2">
-            <label for="item" class="col-sm-3 col-form-label">Item</label>
-            <div class="col-sm-9">
-                <input type="text" class="form-control" name="item" id="item" placeholder="item">
-            </div>
+                <div class="form-group row mb-2">
+                    <label for="mr_mh_no" class="col-sm-3 col-form-label">MR or MH no</label>
+                    <div class="col-sm-9">
+                        {{ form.mr_mh_no }}
+                        <div class="text-danger">
+                            {{ form.mr_mh_no.errors }}
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group row mb-2">
+                    <label for="item" class="col-sm-3 col-form-label">Item</label>
+                    <div class="col-sm-9">
+                        {{ form.item }}
+                        <div class="text-danger">
+                            {{ form.item.errors }}
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group row mb-2">
+                    <label for="unit_of_measure" class="col-sm-3 col-form-label">Unit of Measure</label>
+                    <div class="col-sm-9">
+                        {{ form.unit_of_measure }}
+                        <div class="text-danger">
+                            {{ form.unit_of_measure.errors }}
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group row mb-2">
+                    <label for="quantity" class="col-sm-3 col-form-label">Quantity</label>
+                    <div class="col-sm-9">
+                        {{ form.quantity }}
+                        <div id="stock-info" class="text-info mt-2"></div> <!-- Placeholder for stock -->
+                        <div class="text-danger">
+                            {{ form.quantity.errors }}
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group row mb-2">
+                    <label for="supplier_name" class="col-sm-3 col-form-label">Supplier name</label>
+                    <div class="col-sm-9">
+                        {{ form.supplier_name }}
+                        <div class="text-danger">
+                            {{ form.supplier_name.errors }}
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group row mb-2">
+                    <label for="project_no" class="col-sm-3 col-form-label">Project no</label>
+                    <div class="col-sm-9">
+                        {{ form.project_no }}
+                        <div class="text-danger">
+                            {{ form.project_no.errors }}
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group row mb-2">
+                    <label for="invoice_no" class="col-sm-3 col-form-label">Invoice no</label>
+                    <div class="col-sm-9">
+                        {{ form.invoice_no }}
+                        <div class="text-danger">
+                            {{ form.invoice_no.errors }}
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group row mb-2">
+                    <div class="col-sm-12 text-center">
+                        <button type="submit" class="btn btn-primary">Enter</button>
+                    </div>
+                </div>
+            </form>
         </div>
-        <div class="form-group row mb-2">
-          <label for="unit_of_measure" class="col-sm-3 col-form-label">Unit of Measure</label>
-          <div class="col-sm-9">
-              <input type="text" class="form-control" name="unit_of_measure" id="unit_of_measure" placeholder="unit_of_measure">
-          </div>
-      </div>
-         <div class="form-group row mb-2">
-          <label for="quantity" class="col-sm-3 col-form-label">Quantity</label>
-          <div class="col-sm-9">
-              <input type="text" class="form-control" name="quantity" id="quantity" placeholder="quantity">
-          </div>
-      </div> 
-      <div class="form-group row mb-2">
-        <label for="supplier_name" class="col-sm-3 col-form-label">Supplier name</label>
-        <div class="col-sm-9">
-            <input type="text" class="form-control" name="supplier_name" id="supplier_name" placeholder="supplier_name">
-        </div>
-    </div>   
-    <div class="form-group row mb-2">
-      <label for="project_no" class="col-sm-3 col-form-label">Project no</label>
-      <div class="col-sm-9">
-          <input type="text" class="form-control" name="project_no" id="project_no" placeholder="project_no">
-      </div>
-  </div>    
-  <div class="form-group row mb-2">
-    <label for="invoice_no" class="col-sm-3 col-form-label">Invoice no</label>
-    <div class="col-sm-9">
-        <input type="text" class="form-control" name="invoice_no" id="invoice_no" placeholder="invoice_no">
     </div>
-</div>   
-            <div class="form-group row mb-2">
-                <div class="col-sm-12 text-center">
-                    <button type="submit" class="btn btn-primary">Emter</button>
-                </div>
-            </div>
-        </form>
-    </div>
-</div>
 
-<!-- </div> -->
+    <!-- Bootstrap JS and Popper.js -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
 
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+    const entryTypeField = document.getElementById('id_SorP'); // Entry type field
+    const itemField = document.getElementById('id_item'); // Item field
+    const quantityInput = document.getElementById('id_quantity'); // Quantity input
+    const stockInfo = document.getElementById('stock-info'); // Placeholder for stock info
 
+    const updateStockInfo = () => {
+        const item = itemField.value;
+        const entryType = entryTypeField.value;
 
+        // Fetch stock info only if the entry type is NOT "purchase"
+        if (item && entryType !== 'purchase') {
+            fetch(`/api/get-stock-quantity/?item=${encodeURIComponent(item)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const availableStock = data.stock_quantity;
+                        stockInfo.textContent = `Available stock: ${availableStock}`;
+                        stockInfo.dataset.stockQuantity = availableStock; // Store stock for validation
+                    } else {
+                        stockInfo.textContent = `Error: ${data.message}`;
+                        delete stockInfo.dataset.stockQuantity;
+                    }
+                })
+                .catch(() => {
+                    stockInfo.textContent = 'Error fetching stock information.';
+                    delete stockInfo.dataset.stockQuantity;
+                });
+        } else {
+            // Clear stock info for "purchase" entry type or empty item
+            stockInfo.textContent = '';
+            delete stockInfo.dataset.stockQuantity;
+        }
+    };
+
+    const validateQuantity = () => {
+        const enteredQuantity = parseFloat(quantityInput.value);
+        const availableStock = parseFloat(stockInfo.dataset.stockQuantity || 0);
+        const entryType = entryTypeField.value;
+
+        // Validate only if the entry type is NOT "purchase"
+        if (entryType !== 'purchase' && !isNaN(enteredQuantity) && enteredQuantity > availableStock) {
+            quantityInput.setCustomValidity('Entered quantity exceeds available stock.');
+            quantityInput.reportValidity();
+        } else {
+            quantityInput.setCustomValidity('');
+        }
+    };
+
+    // Event listeners
+    itemField.addEventListener('change', updateStockInfo);
+    quantityInput.addEventListener('input', validateQuantity);
+    entryTypeField.addEventListener('change', () => {
+        updateStockInfo(); // Re-check stock info when entry type changes
+        validateQuantity(); // Revalidate quantity
+    });
+});
+
+</script>  
 
 </body>
 </html>
